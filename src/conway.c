@@ -58,9 +58,6 @@ typedef struct {
      * So, if MAX_COLUMNS is 32, then you would have current[0] through current[31]. */
     unsigned long current[MAX_COLUMNS]; /* 4 bytes (32 bits) * MAX_COLUMNS */
     unsigned long next[MAX_COLUMNS];
-
-    /* FIXME: figure out what this is for? */
-    unsigned long old[MAX_COLUMNS];
 } Field;
 
 /*

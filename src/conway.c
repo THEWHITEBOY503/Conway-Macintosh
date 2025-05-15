@@ -24,7 +24,7 @@
 QDGlobals qd;
 
 /*
-A word to the uninitated:
+A word to the uninitiated:
 
 Field acts as a container for a 2D grid representation.
 
@@ -129,7 +129,7 @@ int x, y;
     }
 }
 
-/* Going to comment this out since it's no longer needed- replaced in lieu of the update function
+/* Going to comment this out since it's no longer needed - replaced in lieu of the update function
 void drawField(field)
 Field *field;
 {
@@ -167,7 +167,7 @@ void createNextGeneration(
     int c, r;
     for (c = 0; c < field->columns; c++) {
         unsigned long rowNext = 0;          /* Another 32-bit-long value */
-        for (r = 0; r < field->rows; r++) { /* Basically checking "Is r lower than (the number of rows)?" */
+        for (r = 0; r < field->rows; r++) { /* Basically checking "Is r lower than (the number of rows)"? */
             int currentState =
                 (field->current[c] & ((unsigned long)1 << r)) !=
                 0; /* Remember that the << operator shifts the bit it's operating on from right to left r times. */
@@ -175,7 +175,7 @@ void createNextGeneration(
             int x, y;
             /* We need to be checking in a 3x3 grid for a cells neighbors */
             for (x = c - 1; x <= c + 1; x++) { /* x is created with the result of c-1, then each time the loop iterates
-                                                  it checks if its greater than or equal to the result of c+1. So, if
+                                                  it checks if it's greater than or equal to the result of c+1. So, if
                                                   we're in column 5, it's going to check columns 3, 4 and 5. */
                 for (y = r - 1; y <= r + 1; y++) { /* Same deal as above but with rows */
                     if (x == c && y == r)
@@ -196,8 +196,8 @@ void createNextGeneration(
                 if (neighbors == 2 || neighbors == 3)
                     rowNext |= (unsigned long)1 << r;
             } else {
-                /* If the cell is dead (currentState == 0), we check if it has 3 alive neighbors, and if it does it
-                 * comes alive (a 1 is inserted in its postion in the row)*/
+                /* If the cell is dead (currentState == 0), we check if it has 3 alive neighbors, and if it does, it
+                 * comes alive (a 1 is inserted in its position in the row)*/
                 if (neighbors == 3)
                     rowNext |= (unsigned long)1 << r;
             }
@@ -268,7 +268,7 @@ void init_window() {
     mainWindow = NewWindow(0L, &windowRect, "\pConway's Game of Life", true, /* Sets window title */
                            documentProc, (WindowPtr)-1L, true, 0);
     SetPort(mainWindow);
-    SetRect(&stepButtonRect, /* Sets the cordinates for the buttons (this one is for the step button), it adds 10 to the
+    SetRect(&stepButtonRect, /* Sets the coordinates for the buttons (this one is for the step button), it adds 10 to the
                                 width of the grid so that it's 10 to the right. */
             GRID_WIDTH + 10, 20, GRID_WIDTH + BUTTON_WIDTH + 10, 40);
 

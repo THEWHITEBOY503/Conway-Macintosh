@@ -1,0 +1,6 @@
+build/
+
+.idea/
+
+# Ignoring this to avoid accidentally committing copyright violations
+universal-interfaces/

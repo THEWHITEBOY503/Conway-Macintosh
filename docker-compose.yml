@@ -1,0 +1,12 @@
+services:
+  retro68:
+    image: local-retro68
+    user: "1000:1000"
+    build:
+      context: ./container
+    environment:
+      - INTERFACES=universal
+    volumes:
+      - ./src:/data/src:ro
+      - ./build:/data/build
+      - ./universal-interfaces:/Retro68/toolchain/universal:ro

@@ -2,8 +2,11 @@
 /* ***BY CONNER SMITH, JOSHUA PURUSHOTHAMAN, ARIAN BAISHYA, AND CHATGPT (BECAUSE CONNER DOESN'T KNOW HOW TO CODE)*** */
 /* ***WRITTEN IN 2025 BY THREE COLLEGE STUDENTS WITH THE INTENT OF PRESENTING AT VCF SW 2025 :)*** */
 
-/* Uses hacky tricks to make LSP happy when not running in the actual emulator */
+/* Set macro if not writing code on the actual mac (emulated or not) */
+/* Allows the use of some hacky tricks to make LSP happy when not running in the actual emulator */
+#ifndef pascal
 #define NOT_ON_MAC
+#endif
 
 #ifdef NOT_ON_MAC
 /* hackily deal with pascal keyword */
@@ -16,9 +19,9 @@
 #include "missing-things.h"
 
 #else
-#include "EventMgr.h"
-#include "Quickdraw.h"
-#include "WindowMgr.h"
+#include <Events.h>
+#include <Quickdraw.h>
+#include <Windows.h>
 
 #endif /* ifdef NOT_ON_MAC */
 
@@ -35,6 +38,9 @@
 
 #define ALIVE 1
 #define DEAD 0
+
+/* The qd global has been removed from the libraries */
+QDGlobals qd;
 
 /*
 A word to the uninitated:
@@ -124,17 +130,20 @@ int x, y;
     cellRect.bottom = cellRect.top + CELL_SIZE; /* Bottom */
     if (field->next[x] &
         ((unsigned long)1 << y)) { /* Could this be turned into a case statement to optimize performance? */
-        FillRect(&cellRect, black);
-    } else if (showGrid) {
-        /* showGrid is true but the conditions to fill in a cell (IE- alive) are not met, so we destroy the rectangle
-         * and redraw it as blank */
-        /* This is the old code for this, it sucks and is super slow, but it DOES at least draw a grid for us, which
-        makes our lives easier. EraseRect(&cellRect); FrameRect(&cellRect);
-        */
-        FillRect(&cellRect, white); /* This is much faster, but doesn't draw in the grid.*/
+        FillRect(&cellRect, &qd.black);
     } else {
-        /* This only fires if the showgrid flag is set to 1. As of right now, the grid doesn't show either way, so this
-         * is irrelevant*/
+        /* Cell is not alive */
+        if (showGrid) {
+            /* showGrid is true but the conditions to fill in a cell (IE- alive) are not met, so we destroy the
+             * rectangle and redraw it as blank */
+
+            /* Create outline by erasing a slightly smaller inner part of the cell */
+            static int PEN_WIDTH = 1;
+            cellRect.left += PEN_WIDTH;
+            cellRect.top += PEN_WIDTH;
+            cellRect.right -= PEN_WIDTH;
+            cellRect.bottom -= PEN_WIDTH;
+        }
         EraseRect(&cellRect);
     }
 }
@@ -246,8 +255,8 @@ int highlighted;
     EraseRect(buttonRect);
 
     if (highlighted) {
-        FillRect(buttonRect, black);
-        PenPat(white);
+        FillRect(buttonRect, &qd.black);
+        PenPat(&qd.white);
         MoveTo(buttonRect->left + 10, buttonRect->top + 15);
         TextMode(srcBic); /* Invert text on black background */
         DrawString(label);
@@ -259,7 +268,7 @@ int highlighted;
     }
 
     /* Ensure border is always visible */
-    PenPat(black);
+    PenPat(&qd.black);
     FrameRect(buttonRect);
 
     /* Reset PenSize to default (1, 1) */
@@ -269,7 +278,7 @@ int highlighted;
 void init_window() {
     Rect windowRect;
 
-    InitGraf(&thePort);
+    InitGraf(&qd.thePort);
     InitFonts();
     InitWindows();
     InitCursor();
@@ -351,7 +360,7 @@ int main() /* In the beginning, there was main(). This is where the program star
                         handleClick(event.where);
                     break;
                 case inDrag:
-                    DragWindow(whichWindow, event.where, &thePort->portRect);
+                    DragWindow(whichWindow, event.where, &qd.thePort->portRect);
                     break;
                 case inGoAway:
                     done = TrackGoAway(whichWindow, event.where);

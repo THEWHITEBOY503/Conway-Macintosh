@@ -9,5 +9,5 @@ cd "$BUILD_PATH" || exit
 rm -rf -- ./.*
 rm -rf -- ./*
 
-cmake "$SRC_PATH" -DCMAKE_TOOLCHAIN_FILE="${RETRO68_CMAKE_TOOLCHAIN_PATH}" &&
+cmake "$SRC_PATH/../" -DCMAKE_TOOLCHAIN_FILE="${RETRO68_CMAKE_TOOLCHAIN_PATH}" &&
 	make

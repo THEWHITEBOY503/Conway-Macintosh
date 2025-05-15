@@ -8,5 +8,6 @@ services:
       - INTERFACES=universal
     volumes:
       - ./src:/data/src:ro
+      - ./CMakeLists.txt:/data/CMakeLists.txt:ro
       - ./build:/data/build
       - ./universal-interfaces:/Retro68/toolchain/universal:ro

@@ -2,28 +2,9 @@
 /* ***BY CONNER SMITH, JOSHUA PURUSHOTHAMAN, ARIAN BAISHYA, AND CHATGPT (BECAUSE CONNER DOESN'T KNOW HOW TO CODE)*** */
 /* ***WRITTEN IN 2025 BY THREE COLLEGE STUDENTS WITH THE INTENT OF PRESENTING AT VCF SW 2025 :)*** */
 
-/* Set macro if not writing code on the actual mac (emulated or not) */
-/* Allows the use of some hacky tricks to make LSP happy when not running in the actual emulator */
-#ifndef pascal
-#define NOT_ON_MAC
-#endif
-
-#ifdef NOT_ON_MAC
-/* hackily deal with pascal keyword */
-#define pascal extern
-
-/* bruh */
-#define true 1
-#define false 0
-
-#include "missing-things.h"
-
-#else
 #include <Events.h>
 #include <Quickdraw.h>
 #include <Windows.h>
-
-#endif /* ifdef NOT_ON_MAC */
 
 /* Define program-wide variables */
 #define MAX_ROWS 32

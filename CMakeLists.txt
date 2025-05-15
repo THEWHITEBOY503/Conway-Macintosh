@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.22)
 project(conway_project)
 
 add_application(Conway
-        conway.c
+        src/conway.c
 )
 
 # Enable -ffunction-sections and -gc-sections to make the app as small as possible

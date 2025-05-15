@@ -1,13 +1,11 @@
-cmake_minimum_required(VERSION 3.22)
-
 # How to build using CMake as a standalone project:
 # mkdir build
 # cd build
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=path/to/Retro68-build/toolchain/m68k-apple-macos/cmake/retro68.toolchain.cmake
 # make
 
-# This is your project statement. You should always list languages;
-# Listing the version is nice here since it sets lots of useful variables
+cmake_minimum_required(VERSION 3.22)
+
 project(conway_project)
 
 add_application(Conway

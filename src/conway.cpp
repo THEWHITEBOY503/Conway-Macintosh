@@ -131,6 +131,12 @@ void update(WindowPtr window) {
     drawAndUpdate();
 }
 
+void updateSingleCell(const uint16_t column, const uint16_t row) {
+    drawCell(column, row);
+
+    fieldMatrix.setColumnState_Next(column, fieldMatrix.getColumnState_Current(column));
+}
+
 WindowPtr init_window() {
     InitGraf(&qd.thePort);
     InitFonts();
@@ -196,10 +202,7 @@ void handleClick(Point where, WindowPtr window) {
             // fieldMatrix.current[x] ^= ((unsigned long)1 << y);
             fieldMatrix.toggleCell_Current(column, row);
 
-            // fieldMatrix.next[x] = fieldMatrix.current[x];
-            fieldMatrix.setColumnState_Next(column, fieldMatrix.getColumnState_Current(column));
-
-            drawCell(column, row);
+            updateSingleCell(column, row);
         }
     }
 }

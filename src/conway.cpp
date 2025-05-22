@@ -10,7 +10,6 @@
 //  quirks that could all easily break it or just modify the headers.
 #include <Quickdraw.h>
 #include <Events.h>
-#include <Windows.h>
 
 #include "conway.h"
 #include "Field.h"
@@ -57,27 +56,23 @@ inline Rect getRect(const uint16_t x, const uint16_t y) {
         const auto rectTop = static_cast<short>((y * CELL_SIZE) + PEN_WIDTH);
 
         /* Define a rectangle for the cell... */
-        const Rect cellRect = {
+        return Rect{
             .top = rectTop,
             .left = rectLeft,
             .bottom = static_cast<short>(rectTop + CELL_SIZE - PEN_WIDTH),
             .right = static_cast<short>(rectLeft + CELL_SIZE - PEN_WIDTH),
         };
-
-        return cellRect;
     } else {
         const auto rectLeft = static_cast<short>(x * CELL_SIZE);
         const auto rectTop = static_cast<short>(y * CELL_SIZE);
 
         /* Define a rectangle for the cell... */
-        const Rect cellRect = {
+        return Rect{
             .top = rectTop,
             .left = rectLeft,
             .bottom = static_cast<short>(rectTop + CELL_SIZE),
             .right = static_cast<short>(rectLeft + CELL_SIZE),
         };
-
-        return cellRect;
     }
 }
 
@@ -87,7 +82,16 @@ void drawCell(const uint16_t x, const uint16_t y) {
     const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
     const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
     if (prevCellState != currentCellState) {
-        InvertRect(&cellRect);
+        // TODO: figure out which one of these is faster, or if there's no significant difference then just choose one
+        if constexpr (true) {
+            InvertRect(&cellRect);
+        } else {
+            if (currentCellState == ALIVE) {
+                FillRect(&cellRect, &qd.black);
+            } else {
+                EraseRect(&cellRect);
+            }
+        }
     }
 }
 
@@ -97,6 +101,7 @@ void drawCell(const uint16_t x, const uint16_t y) {
 //  Solution should be to shift *all* grid drawing 1px up and left
 void initBlankCellGrid() {
     PenSize(1, 1);
+
     for (uint16_t c = 0; c <= MAX_COLUMNS; c++) {
         const int16_t columnX = c * CELL_SIZE;
         MoveTo(columnX, 0);
@@ -107,17 +112,14 @@ void initBlankCellGrid() {
         MoveTo(0, rowY);
         LineTo(MyGlobals::GRID_WIDTH, rowY);
     }
+
+    PenNormal();
 }
 
 // The current code for drawing the cells that have changed. It seems to work pretty well (as long as we're not wasting
 // time drawing a grid), but could probably be made better by only iterating over the cells that have changed.
 void update(WindowPtr window) {
-    // GraphicsWorld offscreenGWorld{window};
-
-    // auto region = NewRgn();
-    // OpenRgn();
-
-    const auto thing = [] {
+    const auto drawAndUpdate = [] {
         for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
             for (uint16_t r = 0; r < MAX_ROWS; r++) {
                 drawCell(c, r);
@@ -125,19 +127,8 @@ void update(WindowPtr window) {
             fieldMatrix.setColumnState_Current(c, fieldMatrix.getColumnState_Next(c));
         }
     };
-    thing();
-    // CloseRgn(region);
-    // InvertRgn(region);
 
-    // if (QDError() != 0) {
-    //     SetWTitle(window, "\perror occurred :(");
-    // }
-
-    // thing();
-
-    // offscreenGWorld.draw(window, thing);
-
-    // DisposeRgn(region);
+    drawAndUpdate();
 }
 
 WindowPtr init_window() {

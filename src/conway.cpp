@@ -10,11 +10,11 @@
 //  quirks that could all easily break it or just modify the headers.
 #include <Quickdraw.h>
 #include <Events.h>
+#include <MacWindows.h>
 
 #include "conway.h"
 #include "Field.h"
-#include "Button/Button.h"
-#include "GraphicsWorld/GraphicsWorld.h"
+#include "Button.h"
 
 namespace MyGlobals {
     // These are for the rendering and not the program logic

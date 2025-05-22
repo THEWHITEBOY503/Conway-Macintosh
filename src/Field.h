@@ -74,7 +74,7 @@ private:
      */
     static void setColumn(uint32_t array[columnCount], const uint16_t column, const bool value) {
         if (value) {
-            setColumnState(array, column, UINT32_MAX);
+            setColumnState(array, column, std::numeric_limits<uint32_t>::max());
         } else {
             setColumnState(array, column, 0);
         }
@@ -170,7 +170,6 @@ public:
 
     void clearField() {
         for (int c = 0; c < columnCount; c++) {
-            // Clear all cells - sets all iterations of field->current to 0
             setColumn_Next(c, DEAD);
         }
     }
@@ -188,45 +187,45 @@ public:
 template <uint16_t rowCount, uint16_t columnCount>
 void Field<rowCount, columnCount>::createNextGeneration() {
     for (int c = 0; c < columnCount; c++) {
-        unsigned long rowNext = 0; /* Another 32-bit-long value */
+        uint32_t rowNext = 0;
         for (int r = 0; r < rowCount; r++) {
-            /* Basically checking "Is r lower than (the number of rows)"? */
-            const int currentState =
-                (this->current[c] & ((unsigned long)1 << r)) !=
-                0; /* Remember that the << operator shifts the bit it's operating on from right to left r times. */
-            int neighbors = 0;
-            /* Creates and defines our variable that will tell us how many alive neighbors we have */
+            /* our variable that will tell us how many alive neighbors we have */
             /* We need to be checking in a 3x3 grid for a cells neighbors */
+            int neighbors = 0;
             for (int x = c - 1; x <= c + 1; x++) {
                 /* x is created with the result of c-1, then each time the loop iterates
-                                                                     it checks if it's greater than or equal to the result of c+1. So, if
-                                                                     we're in column 5, it's going to check columns 3, 4 and 5. */
+                 it checks if it's greater than or equal to the result of c+1. So, if
+                 we're in column 5, it's going to check columns 3, 4 and 5. */
                 for (int y = r - 1; y <= r + 1; y++) {
                     /* Same deal as above but with rows */
                     if (x == c && y == r)
                         continue;
-                    /* We don't count the cell that we're checking so we skip it. You can't be your own
-                                                            neighbor. */
+
+                    /* We don't count the cell that we're checking so we skip it. You can't be your own neighbor. */
                     /* These two lines make sure x and y are within bounds */
+
                     if (x >= 0 && x < columnCount && y >= 0 && y < rowCount &&
                         /* Check if the cell from column x at position y is alive */
-                        (this->current[x] & ((unsigned long)1 << y))) {
+                        getCellState_Current(x, y)
+                    ) {
                         /* If it is, increase neighbors by 1 */
                         neighbors++;
                     }
                 }
             }
 
-            if (currentState != 0) {
+            if (getCellState_Current(c, r)) {
                 // If the cell is alive (currentState == 1), we check if it has 2 or 3 alive neighbors.
                 // If it does, it stays alive (inserts a 1 into its position in the row).
-                if (neighbors == 2 || neighbors == 3)
+                if (neighbors == 2 || neighbors == 3) {
                     rowNext |= (unsigned long)1 << r;
+                }
             } else {
                 // If the cell is dead (currentState == 0), we check if it has 3 alive neighbors, and if it does, it
                 // comes alive (a 1 is inserted in its position in the row)
-                if (neighbors == 3)
+                if (neighbors == 3) {
                     rowNext |= (unsigned long)1 << r;
+                }
             }
         }
         /* Commit the results of the above function into the next iteration */

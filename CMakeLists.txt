@@ -22,10 +22,19 @@ add_application(Conway
 target_link_libraries(Conway
         Button
         GraphicsWorld
+add_compile_options(
+        # Debugging w/ no optimizations
+        "-g"
+        "-gdwarf-4"
+        "-O0"
+        # Warnings and static analyzer
+        "-Wall"
+        "-Wextra"
+        "-fanalyzer"
 )
 
 # Optimizations :)
-add_compile_options("-O2")
+#add_compile_options("-O2")
 
 # Enable -ffunction-sections and -gc-sections to make the app as small as possible
 add_compile_options("-ffunction-sections")

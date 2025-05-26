@@ -9,7 +9,7 @@ Button::Button(const unsigned char *label,
                const short top,
                const short right,
                const short bottom):
-    label(label),
+    _label(label),
     buttonRect{.top = top, .left = left, .bottom = bottom, .right = right} {
 }
 
@@ -34,13 +34,13 @@ void Button::draw(const bool isHighlighted) const {
 
         MoveTo(static_cast<short>(buttonRect.left + 10), static_cast<short>(buttonRect.top + 15));
         TextMode(srcBic); /* Invert text on black background */
-        DrawString(label);
+        DrawString(_label);
         TextMode(srcOr); /* Reset text mode */
     } else {
         FrameRect(&buttonRect);
 
         MoveTo(static_cast<short>(buttonRect.left + 10), static_cast<short>(buttonRect.top + 15));
-        DrawString(label);
+        DrawString(_label);
     }
 
     /* Ensure border is always visible */

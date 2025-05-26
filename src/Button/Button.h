@@ -9,7 +9,7 @@ private:
     const static QDGlobals *qd;
 
 public:
-    const unsigned char *label;
+    const unsigned char *_label;
     const Rect buttonRect;
 
     // public:

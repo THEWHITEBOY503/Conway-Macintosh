@@ -86,6 +86,14 @@ private:
         }
     }
 
+    static void setField(uint32_t array[columnCount], const bool value) {
+        if (value) {
+            std::fill_n(array, columnCount, std::numeric_limits<uint32_t>::max());
+        } else {
+            std::fill_n(array, columnCount, 0);
+        }
+    }
+
 public:
     /****** getters and setters for `current` generation ******/
     [[nodiscard]] bool getCellState_Current(const uint16_t column, const uint16_t row) const {
@@ -114,6 +122,10 @@ public:
 
     void setRow_Current(const uint16_t column, const bool value) {
         setRow(this->current, column, value);
+    }
+
+    void setField_Current(const bool value) {
+        setField(this->current, value);
     }
 
     /****** getters and setters for `next` generation ******/
@@ -145,6 +157,10 @@ public:
         setRow(this->next, column, value);
     }
 
+    void setField_Next(const bool value) {
+        setField(this->next, value);
+    }
+
     /****** end of generic getters and setters ******/
 
     void setRandomStart() {
@@ -169,15 +185,11 @@ public:
     }
 
     void clearField() {
-        for (int c = 0; c < columnCount; c++) {
-            setColumn_Next(c, DEAD);
-        }
+        setField_Next(DEAD);
     }
 
     void fillField() {
-        for (int c = 0; c < columnCount; c++) {
-            setColumn_Next(c, ALIVE);
-        }
+        setField_Next(ALIVE);
     }
 
     // This is the function that decides which cells in the next iteration are alive/dead.

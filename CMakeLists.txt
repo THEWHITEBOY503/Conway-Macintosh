@@ -11,30 +11,32 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(src)
-add_subdirectory(src/Button)
-add_subdirectory(src/GraphicsWorld)
 
-add_application(Conway
-        src/conway.cpp
-        src/conway.h
-        src/Field.h
-)
-target_link_libraries(Conway
-        Button
-        GraphicsWorld
 add_compile_options(
         # Debugging w/ no optimizations
-        "-g"
-        "-gdwarf-4"
-        "-O0"
-        # Warnings and static analyzer
+        #        "-g"
+        #        "-gdwarf-4"
+        #                "-Og"
+        # General warnings
         "-Wall"
         "-Wextra"
+        # Specific warnings
+        "-Wcast-align"
+        "-Wcast-qual"
+        "-Wswitch-enum"
+        "-Wnull-dereference"
+        "-Wshadow"
+        "-Wpointer-arith"
+        # static analyzer
         "-fanalyzer"
+        # Helpful options
+        "-fno-common"
 )
 
 # Optimizations :)
-#add_compile_options("-O2")
+add_compile_options("-Ofast")
+add_compile_options("-fimplicit-constexpr")
+add_compile_options("-Wdisabled-optimization")
 
 # Enable -ffunction-sections and -gc-sections to make the app as small as possible
 add_compile_options("-ffunction-sections")
@@ -43,3 +45,16 @@ if (CMAKE_SYSTEM_NAME MATCHES Retro68)
     # On 68K, also enable --mac-single to build it as a single-segment app (so that this code path doesn't rot)
     add_link_options("-Wl,--mac-single")
 endif ()
+
+add_subdirectory(src/Button)
+add_subdirectory(src/MyBitMap)
+
+add_application(Conway
+        src/conway.cpp
+        src/conway.h
+        src/Field.h
+)
+target_link_libraries(Conway
+        Button
+        MyBitMap
+)

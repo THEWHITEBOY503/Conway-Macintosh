@@ -57,7 +57,7 @@ void FieldUpdater::drawAndUpdate() {
         bitmapDraw.drawFull(window);
         break;
     case FieldState::Ambiguous:
-        bitmapDraw.drawAll(window);
+        bitmapDraw.drawAll(window, field);
         break;
     }
 
@@ -68,7 +68,7 @@ void FieldUpdater::drawAndUpdate() {
 }
 
 FieldUpdater::FieldUpdater(const WindowPtr _window)
-    : window(_window), bitmapDraw{field} {
+    : field{}, window(_window), bitmapDraw{} {
 }
 
 void FieldUpdater::toggleSingleCell(const uint16_t column, const uint16_t row) {
@@ -83,7 +83,6 @@ void FieldUpdater::toggleSingleCell(const uint16_t column, const uint16_t row) {
     const auto currentState = field.getCellState_Current(column, row);
     field.setCell_Next(column, row, currentState);
 }
-
 
 void FieldUpdater::nextGeneration() {
     // Update field
@@ -108,8 +107,13 @@ void FieldUpdater::clearField() {
     field.clearField();
 
     // Draw
+    bitmapDraw.drawBlank(window);
+
     // Update generation
-    drawAndUpdate();
+    // OPTIMIZE: add support for a bulk array copy from `next` to `current`
+    for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
+        field.setColumnState_Current(c, field.getColumnState_Next(c));
+    }
 }
 
 void FieldUpdater::fillField() {
@@ -117,7 +121,7 @@ void FieldUpdater::fillField() {
     field.fillField();
 
     // Draw
-
+    bitmapDraw.drawFull(window);
 
     // Update generation
     // OPTIMIZE: add support for a bulk array copy from `next` to `current`

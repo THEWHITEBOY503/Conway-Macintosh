@@ -65,23 +65,23 @@ void BitMapDraw::eraseBlankCellGrid() const {
     drawBlankCellGridHelper(true);
 }
 
-BitMapDraw::BitMapDraw(const CellField& field): fieldMatrix(field) {
+BitMapDraw::BitMapDraw(): bitmap{} {
 }
 
-void BitMapDraw::drawCell(const uint16_t x, const uint16_t y) const {
-    const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
-    const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
+void BitMapDraw::drawCell(const CellField& field, const uint16_t x, const uint16_t y) const {
+    const bool prevCellState = field.getCellState_Current(x, y);
+    const bool currentCellState = field.getCellState_Next(x, y);
     if (prevCellState != currentCellState) {
         bitmap.drawSquare(x, y, CELL_SIZE);
     }
 }
 
-void BitMapDraw::drawAll(const WindowPtr mainWindow) const {
+void BitMapDraw::drawAll(const WindowPtr mainWindow, const CellField& field) const {
     bitmap.blank();
-    const auto draw = [this] {
+    const auto draw = [&field, this] {
         for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
             for (uint16_t r = 0; r < MAX_ROWS; r++) {
-                drawCell(c, r);
+                drawCell(field, c, r);
             }
         }
     };

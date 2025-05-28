@@ -10,9 +10,7 @@ using GridBitMap = MyBitMap<
 
 class BitMapDraw final {
 private:
-    const CellField& fieldMatrix;
-
-    const GridBitMap bitmap{};
+    const GridBitMap bitmap;
 
     /*
         // class CachedQuickdrawOperationBitMap {
@@ -52,11 +50,11 @@ private:
     void eraseBlankCellGrid() const;
 
 public:
-    explicit BitMapDraw(const CellField& field);
+    explicit BitMapDraw();
 
-    void drawCell(const uint16_t x, const uint16_t y) const;
+    void drawCell(const CellField& field, const uint16_t x, const uint16_t y) const;
 
-    void drawAll(const WindowPtr mainWindow) const;
+    void drawAll(const WindowPtr mainWindow, const CellField& field) const;
 
     void drawBlank(const WindowPtr mainWindow) const;
 

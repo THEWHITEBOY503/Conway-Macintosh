@@ -16,6 +16,14 @@ private:
 
     BitMap bitmap;
 
+    // Setter allows me to add bounds checking during debugging later if I want.
+    // Also isolates the IDE warning from setting a char* to a u_char value to just this method.
+    inline void setByte(const long offset, const u_char value) const {
+        // Suppressing lint warning because this seems to be inaccurate for the quirky mac platform we're targeting
+        // i.e.: Setting the data to signed char values seems to leave the high bit unset, so we need to use unsigned
+        bitmap.baseAddr[offset] = value; // NOLINT(*-narrowing-conversions)
+    }
+
 public:
     static constexpr long numBytes = (static_cast<long>(height) * static_cast<long>(rowBytes));
 
@@ -36,6 +44,12 @@ public:
         return bitmap.bounds;
     }
 
+    void invert() const {
+        for (short i = 0; i < numBytes; ++i) {
+            bitmap.baseAddr[i] = ~bitmap.baseAddr[i];
+        }
+    }
+
     void blank() const {
         std::fill_n(bitmap.baseAddr, numBytes, 0);
     }
@@ -44,26 +58,22 @@ public:
         std::fill_n(bitmap.baseAddr, numBytes, std::numeric_limits<u_char>::max());
     }
 
-    // TODO: I don't think this works for sizes other than CELL_SIZE (8) rn lol
     void drawSquare(const uint16_t column, const uint16_t row, const uint8_t size) const {
-        for (long i = 1; i < size; ++i) {
-            const long y = ((row * 8) + i) * rowBytes;
-            const long offset = y + column;
-
-            bitmap.baseAddr[offset] = std::numeric_limits<char>::max();
+        const uint16_t x = (column * size);
+        const uint16_t y = (row * size);
+        for (uint_fast8_t i = 1; i < size; ++i) {
+            drawHorizontalLine(x, y + i, size);
         }
     }
 
-    void drawDot(const uint16_t column, const uint16_t row, const uint8_t size) const {
-        const long i = size / 2;
-        const long y = ((row * 8) + i) * rowBytes;
-        const long offset = y + column;
-
-        bitmap.baseAddr[offset] |= 0b00001000;
+    void drawDot(const uint16_t column, const uint16_t row) const {
+        const uint16_t x = (column * CELL_SIZE) + (CELL_SIZE / 2);
+        const uint16_t y = (row * CELL_SIZE) + (CELL_SIZE / 2);
+        drawVerticalLine(x, y, 1);
     }
 
     void drawWeirdLineThing(const uint16_t column, const uint16_t row, const uint8_t size) const {
-        drawVerticalLine((column * CELL_SIZE) + 4, row * CELL_SIZE);
+        drawVerticalLine((column * CELL_SIZE) + (CELL_SIZE / 2), row * CELL_SIZE, size);
     }
 
     // TODO: test this with values of x not divisible by 8
@@ -73,32 +83,45 @@ public:
 
         for (long i = 0; i < length; ++i) {
             const long row = (y + i + 1) * rowBytes;
-            const long offset = row + (x_quotient);
+            const long offset = row + x_quotient;
 
             bitmap.baseAddr[offset] |= static_cast<u_char>(1 << x_remainder);
         }
     }
 
+    // TODO: test handling of length that isn't divisible by 8
     void drawHorizontalLine(const uint16_t x, const uint16_t y, const uint16_t length) const {
         const uint16_t x_quotient = x / 8;
-        const uint8_t x_remainder = 7 - (x % 8);
+        const uint8_t x_remainder = (x % 8);
 
         const uint16_t length_quotient = length / 8;
         const uint8_t length_remainder = (length % 8);
 
         const long row = y * rowBytes;
 
-        long offset = row + x_quotient;
+        const long initialOffset = row + x_quotient;
         for (long i = 0; i < length_quotient; ++i) {
-            offset += i;
+            const long offset = initialOffset + i;
 
-            // TODO: shr column by x_remainder # of bits (this has a performance hit)
-            // TODO: handle length that isn't divisible by 8
-            bitmap.baseAddr[offset] = std::numeric_limits<u_char>::max();
+            setByte(offset, std::numeric_limits<u_char>::max());
+        }
+
+        // If column has unaligned offset, fix the first and last bytes
+        if (x_remainder != 0) {
+            const u_char firstValue = std::numeric_limits<u_char>::max() >> (x_remainder);
+            const long firstOffset = initialOffset;
+            const u_char lastValue = std::numeric_limits<u_char>::max() << (7 - x_remainder);
+            const long lastOffset = initialOffset + (length_quotient - 1);
+
+            setByte(firstOffset, firstValue);
+            setByte(lastOffset, lastValue);
         }
 
         if (length_remainder != 0) {
-            bitmap.baseAddr[offset + 1] = (std::numeric_limits<u_char>::max() << (7 - length_remainder));
+            const long finalOffset = initialOffset + length_quotient;
+            const u_char value = std::numeric_limits<u_char>::max() << (7 - length_remainder);
+
+            setByte(finalOffset, value);
         }
     }
 

@@ -248,3 +248,5 @@ void Field<rowCount, columnCount>::createNextGeneration() {
 #include "conway.h"
 
 template class Field<MAX_ROWS, MAX_COLUMNS>;
+
+using CellField = Field<MAX_ROWS, MAX_COLUMNS>;

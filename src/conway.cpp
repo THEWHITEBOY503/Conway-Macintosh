@@ -15,7 +15,7 @@
 #include "conway.h"
 #include "Field.h"
 #include "Button.h"
-#include "MyBitMap.h"
+#include "GridDraw.h"
 
 namespace Buttons {
     namespace {
@@ -37,177 +37,7 @@ namespace Buttons {
 // The qd global has been removed from the libraries, so we have to make our own
 QDGlobals qd;
 
-Field<MAX_ROWS, MAX_COLUMNS> fieldMatrix;
-
-using GridBitMap = MyBitMap<
-    MyGlobals::GRID_WIDTH,
-    MyGlobals::GRID_HEIGHT
->;
-
-namespace DirectDraw {
-    inline Rect getRect(const uint16_t x, const uint16_t y) {
-        /* Create outline by erasing a slightly smaller inner part of the cell */
-        constexpr uint8_t PEN_WIDTH = 1;
-
-        const auto rectLeft = static_cast<short>((x * CELL_SIZE) + PEN_WIDTH);
-        const auto rectTop = static_cast<short>((y * CELL_SIZE) + PEN_WIDTH);
-
-        /* Define a rectangle for the cell... */
-        return Rect{
-            .top = rectTop,
-            .left = rectLeft,
-            .bottom = static_cast<short>(rectTop + CELL_SIZE - PEN_WIDTH),
-            .right = static_cast<short>(rectLeft + CELL_SIZE - PEN_WIDTH),
-        };
-    }
-
-    void drawCell(const uint16_t x, const uint16_t y) {
-        const Rect cellRect = getRect(x, y);
-
-        const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
-        const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
-        if (prevCellState != currentCellState) {
-            // TODO: figure out which one of these is faster, or if there's no significant difference then just choose one
-            if constexpr (true) {
-                InvertRect(&cellRect);
-            } else {
-                if (currentCellState == ALIVE) {
-                    FillRect(&cellRect, &qd.black);
-                } else {
-                    EraseRect(&cellRect);
-                }
-            }
-        }
-    }
-
-    // TODO:
-    //  the window itself has a 1px black border, which makes the top and left borders of the grid
-    //  seem as if they're 2px wide, which looks a bit weird.
-    //  Solution should be to shift *all* grid drawing 1px up and left
-    void drawBlankCellGrid() {
-        PenSize(1, 1);
-
-        for (uint16_t c = 0; c <= MAX_COLUMNS; c++) {
-            const int16_t columnX = c * CELL_SIZE;
-            MoveTo(columnX, 0);
-            LineTo(columnX, MyGlobals::GRID_HEIGHT);
-        }
-        for (uint16_t r = 0; r <= MAX_ROWS; r++) {
-            const int16_t rowY = r * CELL_SIZE;
-            MoveTo(0, rowY);
-            LineTo(MyGlobals::GRID_WIDTH, rowY);
-        }
-
-        PenNormal();
-    }
-}
-
-namespace BitMapDraw {
-    class CachedQuickdrawOperationBitMap {
-    private:
-        GridBitMap bitmap; // NOTE: hardcoded bitmap template specialization
-
-    public:
-        template <typename Functor>
-        explicit CachedQuickdrawOperationBitMap(const WindowPtr mainWindow, Functor&& draw) {
-            bitmap.blank();
-
-            draw();
-
-            CopyBits(
-                &mainWindow->portBits, &bitmap.getBits(),
-                &MyGlobals::GRID_RECT, &bitmap.getBounds(), // NOTE: hardcoded reduced srcRect bounds
-                srcCopy,
-                nullptr
-            );
-        }
-
-        void copyOnto(const GridBitMap& otherBitMap) {
-            CopyBits(
-                &bitmap.getBits(), &otherBitMap.getBits(),
-                &bitmap.getBounds(), &otherBitMap.getBounds(),
-                srcOr,
-                nullptr
-            );
-        }
-    };
-
-    void drawCell(const GridBitMap& bitmap, const uint16_t x, const uint16_t y) {
-        const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
-        const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
-        if (prevCellState != currentCellState) {
-            bitmap.drawSquare(x, y, CELL_SIZE);
-        }
-    }
-
-    void drawBlankCellGrid(const GridBitMap& bitmap) {
-        static bool firstCall = true;
-        static GridBitMap blankGridBitMap{};
-        if (firstCall) {
-            firstCall = false;
-
-            blankGridBitMap.blank();
-            for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-                if (c == 0) continue;
-                blankGridBitMap.drawVerticalGridLine(c, 0, MyGlobals::GRID_HEIGHT);
-            }
-            for (uint16_t r = 0; r < MAX_ROWS; r++) {
-                if (r == 0) continue;
-                blankGridBitMap.drawHorizontalGridLine(0, r, MyGlobals::GRID_WIDTH);
-            }
-        }
-
-        // Use srcOr to basically "add" the grid to whatever is already on the bitmap (think of it like an overlay).
-        // Allows us to pass in a partially erased bitmap and "repair" the grid.
-        CopyBits(
-            &blankGridBitMap.getBits(), &bitmap.getBits(),
-            &blankGridBitMap.getBounds(), &bitmap.getBounds(),
-            srcOr,
-            nullptr
-        );
-    }
-
-    void drawAll(const GridBitMap& bitmap, const WindowPtr mainWindow) {
-        bitmap.blank();
-        const auto draw = [&bitmap] {
-            for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-                for (uint16_t r = 0; r < MAX_ROWS; r++) {
-                    drawCell(bitmap, c, r);
-                }
-            }
-        };
-
-        draw();
-
-        CopyBits(
-            &bitmap.getBits(), &mainWindow->portBits,
-            &bitmap.getBounds(), &MyGlobals::GRID_RECT,
-            srcXor,
-            nullptr
-        );
-    }
-
-    void drawBlank(const GridBitMap& bitmap, const WindowPtr mainWindow) {
-        bitmap.blank();
-        drawBlankCellGrid(bitmap);
-        CopyBits(
-            &bitmap.getBits(), &mainWindow->portBits,
-            &bitmap.getBounds(), &MyGlobals::GRID_RECT,
-            srcCopy,
-            nullptr
-        );
-    }
-
-    void drawFull(const GridBitMap& bitmap, const WindowPtr mainWindow) {
-        bitmap.fill();
-        CopyBits(
-            &bitmap.getBits(), &mainWindow->portBits,
-            &bitmap.getBounds(), &MyGlobals::GRID_RECT,
-            srcCopy,
-            nullptr
-        );
-    }
-}
+CellField fieldMatrix;
 
 namespace UpdateField {
     enum class FieldState: std::uint8_t {
@@ -245,17 +75,17 @@ namespace UpdateField {
     // The current code for drawing the cells that have changed. It seems to work pretty well (as long as we're not wasting
     // time drawing a grid), but could probably be made better by only iterating over the cells that have changed.
     void update(const WindowPtr mainWindow) {
-        static GridBitMap bitmap{};
+        const static BitMapDraw bitmapDraw{fieldMatrix};
 
         switch (calcFieldState()) {
         case FieldState::Blank:
-            BitMapDraw::drawBlank(bitmap, mainWindow);
+            bitmapDraw.drawBlank(mainWindow);
             break;
         case FieldState::Filled:
-            BitMapDraw::drawFull(bitmap, mainWindow);
+            bitmapDraw.drawFull(mainWindow);
             break;
         case FieldState::Ambiguous:
-            BitMapDraw::drawAll(bitmap, mainWindow);
+            bitmapDraw.drawAll(mainWindow);
             break;
         }
 
@@ -266,7 +96,8 @@ namespace UpdateField {
     }
 
     void updateSingleCell(const uint16_t column, const uint16_t row) {
-        DirectDraw::drawCell(column, row);
+        const static auto directDraw = DirectDraw(fieldMatrix);
+        directDraw.drawCell(column, row);
 
         // FIXME: should this be using CellState (instead of ColumnState) ?
         fieldMatrix.setColumnState_Next(column, fieldMatrix.getColumnState_Current(column));
@@ -351,14 +182,9 @@ int main() {
 
     const WindowPtr mainWindow = init_window();
 
-    // TODO: decide on which branch I wanna use
     // Init
-    if constexpr (true) {
-        fieldMatrix.clearField();
-        update(mainWindow);
-    } else {
-        DirectDraw::drawBlankCellGrid();
-    }
+    fieldMatrix.clearField();
+    update(mainWindow);
 
     fieldMatrix.setRandomStart();
     update(mainWindow);

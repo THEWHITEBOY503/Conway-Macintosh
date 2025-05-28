@@ -53,6 +53,7 @@ add_application(Conway
         src/conway.cpp
         src/conway.h
         src/Field.h
+        src/GridDraw.h
 )
 target_link_libraries(Conway
         Button

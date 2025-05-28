@@ -129,7 +129,7 @@ int main() {
                 switch (windowPart) {
                 case inContent:
                     if (whichWindow == mainWindow)
-                        handleClick(event.where, mainWindow, fieldUpdater);
+                        handleClick(event.where, fieldUpdater);
                     break;
                 case inDrag:
                     DragWindow(whichWindow, event.where, &qd.thePort->portRect);

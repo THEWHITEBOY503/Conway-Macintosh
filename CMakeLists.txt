@@ -48,6 +48,7 @@ endif ()
 
 add_subdirectory(src/Button)
 add_subdirectory(src/Field)
+add_subdirectory(src/FieldUpdater)
 add_subdirectory(src/GridDraw)
 
 add_application(Conway
@@ -57,6 +58,5 @@ add_application(Conway
 
 target_link_libraries(Conway
         Button
-        Field
-        GridDraw
+        FieldUpdater
 )

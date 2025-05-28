@@ -13,10 +13,8 @@
 #include <MacWindows.h>
 
 #include "conway.h"
-#include "Field.h"
 #include "Button.h"
-#include "BitMapDraw.h"
-#include "DirectDraw.h"
+#include "FieldUpdater.h"
 
 namespace Buttons {
     namespace {
@@ -37,81 +35,6 @@ namespace Buttons {
 
 // The qd global has been removed from the libraries, so we have to make our own
 QDGlobals qd;
-
-CellField fieldMatrix;
-
-namespace UpdateField {
-    enum class FieldState: std::uint8_t {
-        Blank,
-        Filled,
-        Ambiguous,
-    };
-
-    FieldState calcFieldState() {
-        uint16_t blankColumnCount = 0;
-        uint16_t fullColumnCount = 0;
-        uint16_t ambiguousColumnCount = 0;
-        for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-            const uint32_t columnState = fieldMatrix.getColumnState_Next(c);
-            if (columnState == 0) {
-                blankColumnCount++;
-            } else if (columnState == std::numeric_limits<uint32_t>::max()) {
-                fullColumnCount++;
-            } else {
-                ambiguousColumnCount++;
-            }
-
-            if (ambiguousColumnCount > 0) {
-                return FieldState::Ambiguous;
-            }
-        }
-
-        const bool isFieldBlank = blankColumnCount == MAX_COLUMNS;
-        const bool isFieldFilled = fullColumnCount == MAX_COLUMNS;
-
-        if (isFieldBlank) {
-            return FieldState::Blank;
-        } else if (isFieldFilled) {
-            return FieldState::Filled;
-        } else {
-            // I don't think this will ever be hit, but I'm leaving it in because:
-            //  1. just in case i'm wrong
-            //  2. to keep the linter happy
-            return FieldState::Ambiguous;
-        }
-    }
-
-    // The current code for drawing the cells that have changed. It seems to work pretty well (as long as we're not wasting
-    // time drawing a grid), but could probably be made better by only iterating over the cells that have changed.
-    void update(const WindowPtr mainWindow) {
-        const static BitMapDraw bitmapDraw{fieldMatrix};
-
-        switch (calcFieldState()) {
-        case FieldState::Blank:
-            bitmapDraw.drawBlank(mainWindow);
-            break;
-        case FieldState::Filled:
-            bitmapDraw.drawFull(mainWindow);
-            break;
-        case FieldState::Ambiguous:
-            bitmapDraw.drawAll(mainWindow);
-            break;
-        }
-
-        // Update
-        for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-            fieldMatrix.setColumnState_Current(c, fieldMatrix.getColumnState_Next(c));
-        }
-    }
-
-    void updateSingleCell(const uint16_t column, const uint16_t row) {
-        const static auto directDraw = DirectDraw(fieldMatrix);
-        directDraw.drawCell(column, row);
-
-        const auto currentState = fieldMatrix.getCellState_Current(column, row);
-        fieldMatrix.setCell_Next(column, row, currentState);
-    }
-}
 
 WindowPtr init_window() {
     InitGraf(&qd.thePort);
@@ -144,59 +67,49 @@ WindowPtr init_window() {
     return mainWindow;
 }
 
-inline void handleClick(Point where, const WindowPtr window) {
+inline void handleClick(Point where, FieldUpdater fieldUpdater) {
     using namespace Buttons;
-    using namespace UpdateField;
 
     // QuickDraw function to convert global screen coordinates to local window coordinates.
     // I don't know what that means, honestly.
     GlobalToLocal(&where);
 
+    /* "If Pointer In Rectangle -- IE a button "*/
     if (stepButton.isPointInRect(where)) {
-        /* "If Pointer In Rectangle -- IE a button "*/
         stepButton.draw(true);
-        fieldMatrix.createNextGeneration();
-        update(window);
+        fieldUpdater.nextGeneration();
         stepButton.draw(false);
     } else if (resetButton.isPointInRect(where)) {
         resetButton.draw(true);
-        fieldMatrix.clearField();
-        fieldMatrix.setRandomStart();
-        update(window);
+        fieldUpdater.randomResetField();
         resetButton.draw(false);
     } else if (blankButton.isPointInRect(where)) {
         blankButton.draw(true);
-        fieldMatrix.clearField();
-        update(window);
+        fieldUpdater.clearField();
         blankButton.draw(false);
     } else if (fillButton.isPointInRect(where)) {
         fillButton.draw(true);
-        fieldMatrix.fillField();
-        update(window);
+        fieldUpdater.fillField();
         fillButton.draw(false);
     } else {
         const int column = where.h / CELL_SIZE; // x coordinate
         const int row = where.v / CELL_SIZE; // y coordinate
         if (column >= 0 && column < MAX_COLUMNS && row >= 0 && row < MAX_ROWS) {
-            fieldMatrix.toggleCell_Current(column, row);
-
-            updateSingleCell(column, row);
+            fieldUpdater.toggleSingleCell(column, row);
         }
     }
 }
 
 /* In the beginning, there was main(). This is where the program starts. */
 int main() {
-    using namespace UpdateField;
-
     const WindowPtr mainWindow = init_window();
 
-    // Init
-    fieldMatrix.clearField();
-    update(mainWindow);
+    FieldUpdater fieldUpdater{mainWindow};
 
-    fieldMatrix.setRandomStart();
-    update(mainWindow);
+    // Init
+    fieldUpdater.clearField();
+
+    fieldUpdater.randomResetField();
 
     using namespace Buttons;
     stepButton.draw(false);
@@ -216,7 +129,7 @@ int main() {
                 switch (windowPart) {
                 case inContent:
                     if (whichWindow == mainWindow)
-                        handleClick(event.where, mainWindow);
+                        handleClick(event.where, mainWindow, fieldUpdater);
                     break;
                 case inDrag:
                     DragWindow(whichWindow, event.where, &qd.thePort->portRect);

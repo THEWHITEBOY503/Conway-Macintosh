@@ -99,8 +99,8 @@ namespace UpdateField {
         const static auto directDraw = DirectDraw(fieldMatrix);
         directDraw.drawCell(column, row);
 
-        // FIXME: should this be using CellState (instead of ColumnState) ?
-        fieldMatrix.setColumnState_Next(column, fieldMatrix.getColumnState_Current(column));
+        const auto currentState = fieldMatrix.getCellState_Current(column, row);
+        fieldMatrix.setCell_Next(column, row, currentState);
     }
 }
 

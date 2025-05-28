@@ -57,16 +57,7 @@ public:
         const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
         const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
         if (prevCellState != currentCellState) {
-            // TODO: figure out which one of these is faster, or if there's no significant difference then just choose one
-            if constexpr (true) {
-                InvertRect(&cellRect);
-            } else {
-                if (currentCellState == ALIVE) {
-                    FillRect(&cellRect, &qd.black);
-                } else {
-                    EraseRect(&cellRect);
-                }
-            }
+            InvertRect(&cellRect);
         }
     }
 

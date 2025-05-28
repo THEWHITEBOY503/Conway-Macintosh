@@ -4,13 +4,14 @@
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=path/to/Retro68-build/toolchain/m68k-apple-macos/cmake/retro68.toolchain.cmake
 # make
 
+##### General Stuff #####
 cmake_minimum_required(VERSION 3.22)
 project(Conway)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories(src)
+##### Build Options #####
 
 add_compile_options(
         # Debugging w/ no optimizations
@@ -45,6 +46,10 @@ if (CMAKE_SYSTEM_NAME MATCHES Retro68)
     # On 68K, also enable --mac-single to build it as a single-segment app (so that this code path doesn't rot)
     add_link_options("-Wl,--mac-single")
 endif ()
+
+##### Code #####
+
+include_directories(src)
 
 add_subdirectory(src/Button)
 add_subdirectory(src/Field)

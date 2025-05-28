@@ -209,42 +209,45 @@ void Field<rowCount, columnCount>::createNextGeneration() {
     for (int c = 0; c < columnCount; c++) {
         uint32_t columnNext = 0;
         for (int r = 0; r < rowCount; r++) {
-            /* our variable that will tell us how many alive neighbors we have */
-            /* We need to be checking in a 3x3 grid for a cells neighbors */
-            int neighbors = 0;
-            for (int x = c - 1; x <= c + 1; x++) {
-                /* x is created with the result of c-1, then each time the loop iterates
-                 it checks if it's greater than or equal to the result of c+1. So, if
-                 we're in column 5, it's going to check columns 3, 4 and 5. */
-                for (int y = r - 1; y <= r + 1; y++) {
-                    /* Same deal as above but with rows */
-                    if (x == c && y == r)
-                        continue;
+            // We need to be checking in a 3x3 grid for a cells neighbors
+            const auto iterateOverNeighbors = [&](auto functor) {
+                for (int x = c - 1; x <= c + 1; x++) {
+                    for (int y = r - 1; y <= r + 1; y++) {
+                        // We don't count the cell that we're checking so we skip it.
+                        // You can't be your own neighbor.
+                        if (x == c && y == r) {
+                            continue;
+                        }
 
-                    /* We don't count the cell that we're checking so we skip it. You can't be your own neighbor. */
-                    /* These two lines make sure x and y are within bounds */
-
-                    if (x >= 0 && x < columnCount && y >= 0 && y < rowCount &&
-                        /* Check if the cell from column x at position y is alive */
-                        getCellState_Current(x, y)
-                    ) {
-                        /* If it is, increase neighbors by 1 */
-                        neighbors++;
+                        // These lines make sure x and y are within bounds
+                        if (x >= 0 && x < columnCount &&
+                            y >= 0 && y < rowCount
+                        ) {
+                            functor(x, y);
+                        }
                     }
                 }
-            }
+            };
 
-            if (getCellState_Current(c, r)) {
-                // If the cell is alive (currentState == 1), we check if it has 2 or 3 alive neighbors.
-                // If it does, it stays alive (inserts a 1 into its position in the row).
-                if (neighbors == 2 || neighbors == 3) {
+            /* our variable that will tell us how many alive neighbors we have */
+            int livingNeighbors = 0;
+            iterateOverNeighbors([&](auto x, auto y) {
+                if (getCellState_Current(x, y) == ALIVE) {
+                    livingNeighbors++;
+                }
+            });
+
+            if (getCellState_Current(c, r) == ALIVE) {
+                if (livingNeighbors == 2 || livingNeighbors == 3) {
                     columnNext |= static_cast<unsigned long>(1) << r;
+                } else {
+                    // Dies due to over/underpopulation
                 }
             } else {
-                // If the cell is dead (currentState == 0), we check if it has 3 alive neighbors, and if it does, it
-                // comes alive (a 1 is inserted in its position in the row)
-                if (neighbors == 3) {
+                if (livingNeighbors == 3) {
                     columnNext |= static_cast<unsigned long>(1) << r;
+                } else {
+                    // Does not come back to life
                 }
             }
         }

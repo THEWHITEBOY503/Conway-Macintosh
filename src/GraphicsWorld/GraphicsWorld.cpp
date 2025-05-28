@@ -1,14 +1,12 @@
-#include "GraphicsWorld/GraphicsWorld.h"
+#include "GraphicsWorld.h"
 
 GraphicsWorld::GraphicsWorld(WindowPtr windowPtr) {
-
 }
 
 GraphicsWorld::~GraphicsWorld() {
-
 }
 
-Rect GraphicsWorld::getPortImageRect(const Rect &rect) {
+Rect GraphicsWorld::getPortImageRect(const Rect& rect) {
     // for CopyBits, create rectangles that exclude scroll bar areas
     Rect windowRect = rect;
     windowRect.bottom = windowRect.bottom - 15;
@@ -30,5 +28,5 @@ void GraphicsWorld::copyWorld(const WindowPtr windowPtr) const {
         &destRect,
         srcCopy,
         nullptr
-        );
+    );
 }

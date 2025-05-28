@@ -15,7 +15,8 @@
 #include "conway.h"
 #include "Field.h"
 #include "Button.h"
-#include "GridDraw.h"
+#include "BitMapDraw.h"
+#include "DirectDraw.h"
 
 namespace Buttons {
     namespace {

@@ -47,15 +47,16 @@ if (CMAKE_SYSTEM_NAME MATCHES Retro68)
 endif ()
 
 add_subdirectory(src/Button)
-add_subdirectory(src/MyBitMap)
+add_subdirectory(src/Field)
+add_subdirectory(src/GridDraw)
 
 add_application(Conway
         src/conway.cpp
         src/conway.h
-        src/Field.h
-        src/GridDraw.h
 )
+
 target_link_libraries(Conway
         Button
-        MyBitMap
+        Field
+        GridDraw
 )

@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <random>
 
+#include "conway.h"
+
 template <typename T>
 class MyRandomNumberGenerator {
 private:
@@ -253,8 +255,6 @@ void Field<rowCount, columnCount>::createNextGeneration() {
         setColumnState_Next(c, columnNext);
     }
 }
-
-#include "conway.h"
 
 template class Field<MAX_ROWS, MAX_COLUMNS>;
 

@@ -47,27 +47,35 @@ namespace UpdateField {
     };
 
     FieldState calcFieldState() {
-        bool isFieldBlank = true;
-        bool isFieldFilled = true;
+        uint16_t blankColumnCount = 0;
+        uint16_t fullColumnCount = 0;
+        uint16_t ambiguousColumnCount = 0;
         for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
             const uint32_t columnState = fieldMatrix.getColumnState_Next(c);
-            if (isFieldBlank && columnState != 0) {
-                isFieldBlank = false;
-            }
-            if (isFieldFilled && columnState != std::numeric_limits<uint32_t>::max()) {
-                isFieldFilled = false;
+            if (columnState == 0) {
+                blankColumnCount++;
+            } else if (columnState == std::numeric_limits<uint32_t>::max()) {
+                fullColumnCount++;
+            } else {
+                ambiguousColumnCount++;
             }
 
-            if (!isFieldBlank && !isFieldFilled) {
-                break;
+            if (ambiguousColumnCount > 0) {
+                return FieldState::Ambiguous;
             }
         }
+
+        const bool isFieldBlank = blankColumnCount == MAX_COLUMNS;
+        const bool isFieldFilled = fullColumnCount == MAX_COLUMNS;
 
         if (isFieldBlank) {
             return FieldState::Blank;
         } else if (isFieldFilled) {
             return FieldState::Filled;
         } else {
+            // I don't think this will ever be hit, but I'm leaving it in because:
+            //  1. just in case i'm wrong
+            //  2. to keep the linter happy
             return FieldState::Ambiguous;
         }
     }

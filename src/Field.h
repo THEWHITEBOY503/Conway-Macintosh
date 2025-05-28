@@ -208,7 +208,7 @@ public:
 template <uint16_t rowCount, uint16_t columnCount>
 void Field<rowCount, columnCount>::createNextGeneration() {
     for (int c = 0; c < columnCount; c++) {
-        uint32_t rowNext = 0;
+        uint32_t columnNext = 0;
         for (int r = 0; r < rowCount; r++) {
             /* our variable that will tell us how many alive neighbors we have */
             /* We need to be checking in a 3x3 grid for a cells neighbors */
@@ -239,18 +239,18 @@ void Field<rowCount, columnCount>::createNextGeneration() {
                 // If the cell is alive (currentState == 1), we check if it has 2 or 3 alive neighbors.
                 // If it does, it stays alive (inserts a 1 into its position in the row).
                 if (neighbors == 2 || neighbors == 3) {
-                    rowNext |= (unsigned long)1 << r;
+                    columnNext |= static_cast<unsigned long>(1) << r;
                 }
             } else {
                 // If the cell is dead (currentState == 0), we check if it has 3 alive neighbors, and if it does, it
                 // comes alive (a 1 is inserted in its position in the row)
                 if (neighbors == 3) {
-                    rowNext |= (unsigned long)1 << r;
+                    columnNext |= static_cast<unsigned long>(1) << r;
                 }
             }
         }
         /* Commit the results of the above function into the next iteration */
-        this->next[c] = rowNext;
+        setColumnState_Next(c, columnNext);
     }
 }
 

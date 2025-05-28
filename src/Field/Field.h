@@ -8,9 +8,6 @@
 template <typename T>
 class MyRandomNumberGenerator {
 private:
-    // std::random_device randDevice{};
-    // std::default_random_engine randEngine{randDevice()};
-
     constexpr static T seed = 123456789;
     std::default_random_engine randEngine{seed};
 

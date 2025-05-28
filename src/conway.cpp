@@ -225,17 +225,17 @@ int main() {
                     done = TrackGoAway(whichWindow, event.where);
                     break;
                 default:
-                    // TODO: what should we do here (if anything)?
+                    // ignore other events
                     break;
                 }
                 break;
             case keyDown: /* Handle button presses */
-                // FIXME: This was here when I got here, but I'm not sure closing
+                // TODO: This was here when I got here, but I'm not sure closing
                 //  the game is the right response to any key presses lol.
                 done = true;
                 break;
             default:
-                // TODO: what should we do here (if anything)?
+                // ignore other events
                 break;
             }
         }

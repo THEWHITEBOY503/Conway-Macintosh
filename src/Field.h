@@ -1,15 +1,36 @@
 #pragma once
 
 #include <cstdint>
+#include <random>
+
+template <typename T>
+class MyRandomNumberGenerator {
+private:
+    // std::random_device randDevice{};
+    // std::default_random_engine randEngine{randDevice()};
+
+    constexpr static T seed = 123456789;
+    std::default_random_engine randEngine{seed};
+
+    std::uniform_int_distribution<T> uniformDist;
+
+public:
+    constexpr static T MIN = std::numeric_limits<T>::min();
+    constexpr static T MAX = std::numeric_limits<T>::max();
+
+    MyRandomNumberGenerator(): uniformDist{MIN, MAX} {
+    }
+
+    T get() {
+        return uniformDist(randEngine);
+    }
+};
 
 /* Linear Congruential Generator (LCG) for generating random numbers */
-static unsigned long rand_state = 123456789; /* RNG Seed */
-inline uint16_t rand_gen() {
-    // Random bullshit happens here
-    rand_state *= 1103515245;
-    rand_state += 12345;
+inline uint32_t rand_gen() {
+    static MyRandomNumberGenerator<uint32_t> rng{};
 
-    return (rand_state / UINT16_MAX) % INT16_MAX;
+    return rng.get();
 }
 
 inline bool randBool() {
@@ -164,23 +185,11 @@ public:
     /****** end of generic getters and setters ******/
 
     void setRandomStart() {
+        setField_Current(DEAD);
+
         for (int c = 0; c < columnCount; c++) {
-            this->current[c] = 0; /* Empties out the entire column */
-            /* Same as the above loop, but we're using r, and checking it against field->rows */
-            for (int r = 0; r < rowCount; r++) {
-                // 50% chance of being true
-                if (!randBool()) {
-                    /* field->next is an unsigned long, so it's a 32-bit binary value.
-                    We start the entire column as 0, so that means it's now 00000000000000000000000000000000
-                    then, rand_gen() is run to return either a 1 or a 0 The % operator returns the remainder, so if we're
-                    dividing by 2, the remainder can only be either 1 (odd number) or 0 (even number). If the condition to
-                    make a cell alive is met (in our case it's 0, but it could just as easily be 1), the bit for that cell
-                    is set to 1. Let's say that we somehow manage to only have row 16 come alive. field->current[c] then
-                    becomes: 00000000000000001000000000000000 Because `|= ((unsigned long)1 << r` basically moves the
-                    'cursor' back r places, then sets the bit at its position to 1. */
-                    setCell_Next(c, r, true);
-                }
-            }
+            const auto randomNum = rand_gen();
+            setColumnState_Next(c, randomNum);
         }
     }
 

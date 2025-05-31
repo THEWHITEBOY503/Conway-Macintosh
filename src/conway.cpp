@@ -67,7 +67,7 @@ WindowPtr init_window() {
     return mainWindow;
 }
 
-inline void handleClick(Point where, FieldUpdater fieldUpdater) {
+inline void handleClick(Point where, FieldUpdater& fieldUpdater) {
     using namespace Buttons;
 
     // QuickDraw function to convert global screen coordinates to local window coordinates.

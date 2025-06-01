@@ -1,13 +1,45 @@
+x-ro-nocreate-volume: &ro_nocreate_volume
+  - type: bind
+    read_only: true
+    bind:
+      create_host_path: false
+
+x-rw-nocreate-volume: &rw_nocreate_volume
+  - <<: *ro_nocreate_volume
+    read_only: false
+
 services:
   retro68:
-    image: local-retro68
+    image: ghcr.io/arian04/retro68:latest
+    container_name: retro68
     user: "1000:1000"
-    build:
-      context: ./container
     environment:
-      - INTERFACES=universal
+      INTERFACES: universal
     volumes:
-      - ./src:/data/src:ro
-      - ./CMakeLists.txt:/data/CMakeLists.txt:ro
-      - ./build:/data/build
-      - ./universal-interfaces:/Retro68/toolchain/universal:ro
+      # Source code and build directories.
+      # Only the build directory is writable because that's all that's necessary.
+      #
+      # All you really need to know is to make your code available in the structure
+      # required for CMake to work properly, and give it a build directory you'll
+      # expect the build artifacts to be created in.
+      - <<: *ro_nocreate_volume
+        source: ${SRC_ROOT_PATH}
+        target: /data/src
+      - <<: *rw_nocreate_volume
+        source: ${BUILD_DIR_PATH}
+        target: /data/build
+
+      # Universal libs for the toolchain to use
+      - <<: *ro_nocreate_volume
+        source: ${UNIVERSAL_INTERFACES_PATH}
+        target: /Retro68-build/InterfacesAndLibraries
+
+      # Persistent volume so that linking of universal libs doesn't have to be done every time
+      - type: volume
+        source: universal-interfaces
+        target: /Retro68-build/toolchain
+        volume:
+          nocopy: false
+volumes:
+  # Persistent volume so that linking of universal libs doesn't have to be done every time
+  universal-interfaces:

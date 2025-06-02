@@ -69,9 +69,7 @@ BitMapDraw::BitMapDraw(): bitmap{} {
 }
 
 void BitMapDraw::drawCell(const CellField& field, const uint16_t x, const uint16_t y) const {
-    const bool prevCellState = field.getCellState_Current(x, y);
-    const bool currentCellState = field.getCellState_Next(x, y);
-    if (prevCellState != currentCellState) {
+    if (field.cellHasChangedSinceLastGeneration(x, y)) {
         bitmap.drawSquare(x, y, CELL_SIZE);
     }
 }

@@ -12,12 +12,12 @@ enum class FieldState: std::uint8_t {
     Ambiguous,
 };
 
-FieldState calcFieldState(CellField& field) {
+FieldState calcFieldState(const CellField& field) {
     uint16_t blankColumnCount = 0;
     uint16_t fullColumnCount = 0;
     uint16_t ambiguousColumnCount = 0;
     for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-        const uint32_t columnState = field.getColumnState_Next(c);
+        const uint32_t columnState = field.getColumnState_Current(c);
         if (columnState == 0) {
             blankColumnCount++;
         } else if (columnState == std::numeric_limits<uint32_t>::max()) {
@@ -46,9 +46,7 @@ FieldState calcFieldState(CellField& field) {
     }
 }
 
-// The current code for drawing the cells that have changed. It seems to work pretty well (as long as we're not wasting
-// time drawing a grid), but could probably be made better by only iterating over the cells that have changed.
-void FieldUpdater::drawAndUpdate() {
+void FieldUpdater::draw() const {
     switch (calcFieldState(field)) {
     case FieldState::Blank:
         bitmapDraw.drawBlank(window);
@@ -59,11 +57,6 @@ void FieldUpdater::drawAndUpdate() {
     case FieldState::Ambiguous:
         bitmapDraw.drawAll(window, field);
         break;
-    }
-
-    // Update
-    for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-        field.setColumnState_Current(c, field.getColumnState_Next(c));
     }
 }
 
@@ -76,12 +69,7 @@ void FieldUpdater::toggleSingleCell(const uint16_t column, const uint16_t row) {
     field.toggleCell_Current(column, row);
 
     // Draw
-    const static auto directDraw = DirectDraw(field);
-    directDraw.drawCell(column, row);
-
-    // Update generation
-    const auto currentState = field.getCellState_Current(column, row);
-    field.setCell_Next(column, row, currentState);
+    DirectDraw::toggleCell(column, row);
 }
 
 void FieldUpdater::nextGeneration() {
@@ -89,8 +77,7 @@ void FieldUpdater::nextGeneration() {
     field.createNextGeneration();
 
     // Draw
-    // Update generation
-    drawAndUpdate();
+    draw();
 }
 
 void FieldUpdater::randomResetField() {
@@ -98,8 +85,7 @@ void FieldUpdater::randomResetField() {
     field.setRandomStart();
 
     // Draw
-    // Update generation
-    drawAndUpdate();
+    draw();
 }
 
 void FieldUpdater::clearField() {
@@ -108,12 +94,6 @@ void FieldUpdater::clearField() {
 
     // Draw
     bitmapDraw.drawBlank(window);
-
-    // Update generation
-    // OPTIMIZE: add support for a bulk array copy from `next` to `current`
-    for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-        field.setColumnState_Current(c, field.getColumnState_Next(c));
-    }
 }
 
 void FieldUpdater::fillField() {
@@ -122,10 +102,4 @@ void FieldUpdater::fillField() {
 
     // Draw
     bitmapDraw.drawFull(window);
-
-    // Update generation
-    // OPTIMIZE: add support for a bulk array copy from `next` to `current`
-    for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
-        field.setColumnState_Current(c, field.getColumnState_Next(c));
-    }
 }

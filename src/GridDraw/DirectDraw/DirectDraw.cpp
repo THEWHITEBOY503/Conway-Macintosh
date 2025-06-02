@@ -1,6 +1,10 @@
 #include "DirectDraw.h"
 
-Rect DirectDraw::getRect(const uint16_t x, const uint16_t y) {
+#include <MacWindows.h>
+
+#include "conway.h"
+
+Rect getRect(const uint16_t x, const uint16_t y) {
     /* Create outline by erasing a slightly smaller inner part of the cell */
     constexpr uint8_t PEN_WIDTH = 1;
 
@@ -16,8 +20,7 @@ Rect DirectDraw::getRect(const uint16_t x, const uint16_t y) {
     };
 }
 
-DirectDraw::DirectDraw(const CellField& field): fieldMatrix(field) {
-}
+DirectDraw::DirectDraw() = default;
 
 // TODO:
 //  the window itself has a 1px black border, which makes the top and left borders of the grid
@@ -40,20 +43,16 @@ void DirectDraw::drawBlankCellGrid() {
     PenNormal();
 }
 
-void DirectDraw::drawCell(const uint16_t x, const uint16_t y) const {
+void DirectDraw::toggleCell(const uint16_t x, const uint16_t y) {
     const Rect cellRect = getRect(x, y);
 
-    const bool prevCellState = fieldMatrix.getCellState_Current(x, y);
-    const bool currentCellState = fieldMatrix.getCellState_Next(x, y);
-    if (prevCellState != currentCellState) {
-        InvertRect(&cellRect);
-    }
+    InvertRect(&cellRect);
 }
 
-void DirectDraw::drawAll() const {
+void DirectDraw::drawAll() {
     for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
         for (uint16_t r = 0; r < MAX_ROWS; r++) {
-            drawCell(c, r);
+            toggleCell(c, r);
         }
     }
 }

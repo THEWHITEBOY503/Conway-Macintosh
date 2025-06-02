@@ -9,7 +9,7 @@ private:
     const WindowPtr window;
     const BitMapDraw bitmapDraw;
 
-    void drawAndUpdate();
+    void draw() const;
 
 public:
     explicit FieldUpdater(const WindowPtr _window);

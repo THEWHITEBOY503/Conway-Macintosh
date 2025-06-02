@@ -1,24 +1,16 @@
 #pragma once
 
-#include <Windows.h>
-#include "Field.h"
+#include <cstdint>
 
 class DirectDraw final {
-private:
-    const CellField& fieldMatrix;
-
-    static Rect getRect(const uint16_t x, const uint16_t y);
-
 public:
-    explicit DirectDraw(const CellField& field);
-
-    // ~DirectDraw() override = default;
+    explicit DirectDraw();
 
     static void drawBlankCellGrid();
 
-    void drawCell(const uint16_t x, const uint16_t y) const;
+    static void toggleCell(const uint16_t x, const uint16_t y);
 
-    void drawAll() const;
+    static void drawAll();
 
     static void drawBlank();
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <MacTypes.h>
+
 constexpr bool ALIVE = true;
 constexpr bool DEAD = false;
 

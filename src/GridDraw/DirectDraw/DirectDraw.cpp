@@ -60,10 +60,3 @@ void DirectDraw::drawAll() {
 void DirectDraw::drawBlank() {
     EraseRect(&MyGlobals::GRID_RECT);
 }
-
-void DirectDraw::drawFull() {
-    // FIXME:
-    //  im pretty sure this call to qd will not work and will cause issues.
-    //  fix it the same way as I did in Button
-    FillRect(&MyGlobals::GRID_RECT, &qd.black);
-}

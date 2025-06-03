@@ -54,10 +54,6 @@ class Field {
 
 private:
     SwappableBuffers<columnCount> buffers{};
-    // [columnCount] makes current an array of the size of columnCount.
-    // So, if columnCount is 32, then you would have current[0] through current[31].
-    // uint32_t current[columnCount] = {}; // 4 bytes (32 bits) * MAX_COLUMNS
-    // uint32_t next[columnCount] = {};
 
     /****** getters and setters for `next` generation ******/
     [[nodiscard]] bool getCellState_Next(const uint16_t column, const uint16_t row) const;

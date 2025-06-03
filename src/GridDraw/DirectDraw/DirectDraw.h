@@ -13,6 +13,4 @@ public:
     static void drawAll();
 
     static void drawBlank();
-
-    static void drawFull();
 };

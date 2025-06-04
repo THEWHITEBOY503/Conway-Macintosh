@@ -17,7 +17,7 @@ add_compile_options(
         # Debugging w/ no optimizations
         #        "-g"
         #        "-gdwarf-4"
-        #                "-Og"
+        #        "-Og"
         # General warnings
         "-Wall"
         "-Wextra"

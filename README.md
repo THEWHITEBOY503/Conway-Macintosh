@@ -28,3 +28,24 @@ Once it's done running, the build outputs should be in the `./build` directory.
 The first build will take a little while (depending on your internet
 connection) because it'll download a large container image. Subsequent builds
 will re-use this image and not take nearly as long.
+
+### More Development Notes
+
+During the development of this project, I used a few tools to improve the development experience.
+They're all optional, but they really streamline the workflow.
+
+[//]: # (TODO: continue explaining)
+
+##### [Just](https://github.com/casey/just)
+
+- justfile -> uses the "Just" command runner to make things easier to run (i.e.: "./build.sh && big-launch-command"
+  turns into "just build launchAPPL". These "recipes" are configured in the repo's `justfile`.
+
+##### [Nix](https://nixos.org/)
+
+- nix stuff for easily patching and using minivmac and LaunchAPPL during development
+  This is configured in the repo's `flake.nix` and `flake.lock` files.
+
+Additionally, [nix-direnv](https://github.com/nix-community/nix-direnv) can be used to automatically
+drop you into the aforementioned nix development shell when entering the directory.
+It uses the repo's `.envrc` file to do this.

@@ -14,10 +14,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 ##### Build Options #####
 
 add_compile_options(
-        # Debugging w/ no optimizations
-        #        "-g"
-        #        "-gdwarf-4"
-        #        "-Og"
         # General warnings
         "-Wall"
         "-Wextra"
@@ -38,6 +34,13 @@ add_compile_options(
 add_compile_options("-Ofast")
 add_compile_options("-fimplicit-constexpr")
 add_compile_options("-Wdisabled-optimization")
+
+# Reduce code size by disabling exceptions and RTTI
+add_compile_options("-fno-exceptions")
+add_compile_options("-fno-rtti")
+
+# Quirky optimizations
+add_compile_options("-fno-threadsafe-statics")
 
 # Enable -ffunction-sections and -gc-sections to make the app as small as possible
 add_compile_options("-ffunction-sections")

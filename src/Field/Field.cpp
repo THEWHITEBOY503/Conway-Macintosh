@@ -2,10 +2,12 @@
 
 #include <random>
 
+#include <OSUtils.h>
+
 template <typename T>
 class MyRandomNumberGenerator {
 private:
-    constexpr static T seed = 123456789;
+    const uint32_t seed = TickCount();
     std::default_random_engine randEngine{seed};
 
     std::uniform_int_distribution<T> uniformDist;

@@ -11,6 +11,10 @@
 #include <Quickdraw.h>
 #include <Events.h>
 #include <MacWindows.h>
+#include <TextEdit.h>
+#include <Devices.h>
+#include <Resources.h>
+#include <string>
 
 #include "conway.h"
 #include "Button.h"
@@ -36,13 +40,42 @@ namespace Buttons {
 
 bool inDemoMode = false;
 
+enum MenuItem: short { // NOLINT(*-enum-size)
+    kMenuApple = 128,
+    kMenuFile,
+    kMenuEdit
+};
+
+enum MenuItemType: short { // NOLINT(*-enum-size)
+    kItemAbout = 1,
+
+    kItemNewDoc = 1,
+    kItemNewRounded = 2,
+    kItemNewCustomFromStub = 3,
+    kItemNewCustomFromRes = 4,
+    kItemClose = 5,
+    kItemQuit = 7
+};
+
 // The qd global has been removed from the libraries, so we have to make our own
 QDGlobals qd;
+
+void MyInitMenus() {
+    InitMenus();
+
+    const MenuBarHandle menuBar = GetNewMBar(128);
+    SetMenuBar(menuBar);
+    DisposeHandle(menuBar);
+
+    DrawMenuBar();
+}
 
 WindowPtr init_window() {
     InitGraf(&qd.thePort);
     InitFonts();
     InitWindows();
+    MyInitMenus();
+    TEInit();
     InitCursor();
 
     // Setting parameters for the window size and shit
@@ -109,6 +142,86 @@ inline void handleClick(Point where, FieldUpdater& fieldUpdater) {
     }
 }
 
+void showAboutBox() {
+    WindowRef previousPort;
+    GetPort(&previousPort);
+
+    const WindowRef w = GetNewWindow(128, nullptr, (WindowPtr)-1);
+    MoveWindow(w,
+               (qd.screenBits.bounds.right / 2) - (w->portRect.right / 2),
+               (qd.screenBits.bounds.bottom / 2) - (w->portRect.bottom / 2),
+               false);
+    ShowWindow(w);
+    SetPort(w);
+
+    {
+        // Create box rect
+        Rect r = w->portRect;
+        InsetRect(&r, 10, 10);
+
+        // Get + Lock resource
+        Handle h = GetResource('TEXT', 128);
+        HLock(h);
+
+        // Use resource
+        TETextBox(*h, GetHandleSize(h), &r, teJustLeft);
+
+        // Release resource
+        ReleaseResource(h);
+    }
+
+    // I believe this will wait until a mouse button has gone up, then wait
+    // until it has gone down, before continuing (and closing the window).
+    //
+    // If I'm correct, then it basically spins until the next mouse click.
+    while (Button() == 0) {
+    }
+    while (Button() != 0) {
+    }
+
+    FlushEvents(everyEvent, 0);
+
+    DisposeWindow(w);
+
+    SetPort(previousPort);
+}
+
+void handleMenuCommand(const long menuResult) {
+    const auto menuID = static_cast<short>(menuResult >> 16);
+    const auto menuItem = static_cast<short>(menuResult & 0xFFFF);
+
+    Str255 str;
+    if (menuID == kMenuApple) {
+        if (menuItem == kItemAbout) {
+            showAboutBox();
+        } else {
+            GetMenuItemText(GetMenu(128), menuItem, str);
+            OpenDeskAcc(str);
+        }
+    }
+
+    HiliteMenu(0);
+}
+
+void drawButtons() {
+    using namespace Buttons;
+    stepButton.draw(false);
+    resetButton.draw(false);
+    blankButton.draw(false);
+    fillButton.draw(false);
+    demoButton.draw(false);
+}
+
+void updateScreen(const WindowRef mainWindow, const FieldUpdater& fieldUpdater) {
+    BeginUpdate(mainWindow);
+
+    fieldUpdater.redraw();
+
+    drawButtons();
+
+    EndUpdate(mainWindow);
+}
+
 /* In the beginning, there was main(). This is where the program starts. */
 int main() {
     const WindowPtr mainWindow = init_window();
@@ -120,12 +233,7 @@ int main() {
 
     fieldUpdater.randomResetField();
 
-    using namespace Buttons;
-    stepButton.draw(false);
-    resetButton.draw(false);
-    blankButton.draw(false);
-    fillButton.draw(false);
-    demoButton.draw(false);
+    drawButtons();
 
     int demoModeStepCounter = 0;
     bool done = false;
@@ -165,6 +273,11 @@ int main() {
                     break;
                 case inGoAway:
                     done = TrackGoAway(whichWindow, event.where);
+                    break;
+                case inMenuBar:
+                    // UpdateMenus();
+                    handleMenuCommand(MenuSelect(event.where));
+                    updateScreen(mainWindow, fieldUpdater);
                     break;
                 default:
                     // ignore other events

@@ -62,6 +62,7 @@ add_subdirectory(src/GridDraw)
 add_application(Conway
         src/conway.cpp
         src/conway.h
+        src/conway.r
 )
 
 target_link_libraries(Conway

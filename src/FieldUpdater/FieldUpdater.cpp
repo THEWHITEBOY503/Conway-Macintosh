@@ -64,6 +64,10 @@ FieldUpdater::FieldUpdater(const WindowPtr _window)
     : field{}, window(_window), bitmapDraw{} {
 }
 
+void FieldUpdater::redraw() const {
+    bitmapDraw.drawAllForcefully(window, field);
+}
+
 void FieldUpdater::toggleSingleCell(const uint16_t column, const uint16_t row) {
     // Update field
     field.toggleCell_Current(column, row);

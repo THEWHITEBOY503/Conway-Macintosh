@@ -24,6 +24,7 @@ public:
     void drawCell(const CellField& field, const uint16_t x, const uint16_t y) const;
 
     void drawAll(const WindowPtr mainWindow, const CellField& field) const;
+    void drawAllForcefully(const WindowPtr mainWindow, const CellField& field) const;
 
     void drawBlank(const WindowPtr mainWindow) const;
 

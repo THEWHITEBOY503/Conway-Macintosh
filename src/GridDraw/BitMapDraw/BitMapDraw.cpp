@@ -90,6 +90,24 @@ void BitMapDraw::drawAll(const WindowPtr mainWindow, const CellField& field) con
     copyBitMapToWindow(bitmap, mainWindow, DrawMode::ToggleSetPixels);
 }
 
+void BitMapDraw::drawAllForcefully(const WindowPtr mainWindow, const CellField& field) const {
+    bitmap.blank();
+    const auto draw = [&field, this] {
+        for (uint16_t c = 0; c < MAX_COLUMNS; c++) {
+            for (uint16_t r = 0; r < MAX_ROWS; r++) {
+                if (field.getCellState_Current(c, r)) {
+                    bitmap.drawSquare(c, r, CELL_SIZE);
+                }
+            }
+        }
+    };
+
+    draw();
+
+    drawBlankCellGrid();
+    copyBitMapToWindow(bitmap, mainWindow, DrawMode::ReplaceAll);
+}
+
 void BitMapDraw::drawBlank(const WindowPtr mainWindow) const {
     bitmap.blank();
     drawBlankCellGrid();

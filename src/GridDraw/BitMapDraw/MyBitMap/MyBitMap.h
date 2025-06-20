@@ -79,13 +79,13 @@ public:
     // TODO: test this with values of x not divisible by 8
     void drawVerticalLine(const uint16_t x, const uint16_t y, const uint16_t length) const {
         const uint16_t x_quotient = x / 8;
-        const uint8_t x_remainder = 7 - (x % 8);
+        const uint8_t x_remainder = x % 8;
 
         for (long i = 0; i < length; ++i) {
             const long row = (y + i) * rowBytes;
             const long offset = row + x_quotient;
 
-            bitmap.baseAddr[offset] |= static_cast<u_char>(1 << x_remainder);
+            bitmap.baseAddr[offset] |= static_cast<u_char>(1 << (7 - x_remainder));
         }
     }
 

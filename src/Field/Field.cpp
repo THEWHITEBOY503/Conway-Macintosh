@@ -90,8 +90,10 @@ void Field<rowCount, columnCount>::setRandomStart() {
 
     for (int c = 0; c < columnCount; c++) {
         const auto randomNum = rng.get();
-        setColumnState_Current(c, randomNum);
+        setColumnState_Next(c, randomNum);
     }
+
+    buffers.swap();
 }
 
 template <uint16_t rowCount, uint16_t columnCount>

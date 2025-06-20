@@ -31,7 +31,10 @@ namespace Buttons {
     MyGUI::Button resetButton("\pReset", ALL_BUTTONS_LEFT_X_COORDINATE, 60, ALL_BUTTONS_RIGHT_X_COORDINATE, 80);
     MyGUI::Button blankButton("\pBlank", ALL_BUTTONS_LEFT_X_COORDINATE, 100, ALL_BUTTONS_RIGHT_X_COORDINATE, 120);
     MyGUI::Button fillButton("\pFill", ALL_BUTTONS_LEFT_X_COORDINATE, 140, ALL_BUTTONS_RIGHT_X_COORDINATE, 160);
+    MyGUI::Button demoButton("\pDemo", ALL_BUTTONS_LEFT_X_COORDINATE, 180, ALL_BUTTONS_RIGHT_X_COORDINATE, 200);
 }
+
+bool inDemoMode = false;
 
 // The qd global has been removed from the libraries, so we have to make our own
 QDGlobals qd;
@@ -91,6 +94,12 @@ inline void handleClick(Point where, FieldUpdater& fieldUpdater) {
         fillButton.draw(true);
         fieldUpdater.fillField();
         fillButton.draw(false);
+    } else if (demoButton.isPointInRect(where)) {
+        demoButton.draw(true);
+        fieldUpdater.clearField();
+        fieldUpdater.randomResetField();
+        inDemoMode = !inDemoMode;
+        demoButton.draw(false);
     } else {
         const int column = where.h / CELL_SIZE; // x coordinate
         const int row = where.v / CELL_SIZE; // y coordinate
@@ -116,9 +125,29 @@ int main() {
     resetButton.draw(false);
     blankButton.draw(false);
     fillButton.draw(false);
+    demoButton.draw(false);
 
+    int demoModeStepCounter = 0;
     bool done = false;
     while (!done) {
+        if (inDemoMode) {
+            constexpr u_long numSeconds = 1;
+            constexpr u_long numTicks = numSeconds * 60;
+
+            if (demoModeStepCounter >= 30) {
+                demoModeStepCounter = 0;
+                fieldUpdater.randomResetField();
+            } else {
+                demoModeStepCounter++;
+                fieldUpdater.nextGeneration();
+
+                // TODO:
+                //  improve this so user input isn't thoroughly slowed
+                //  down by this delay.
+                Delay(numTicks, nullptr);
+            }
+        }
+
         EventRecord event;
         if (GetNextEvent(everyEvent, &event) != 0) {
             int windowPart;

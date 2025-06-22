@@ -4,11 +4,11 @@ A port of Conway's Game of Life for 68000 based Macintoshes.
 
 It's written in C++ and built using [Retro68](https://github.com/autc04/Retro68).
 
-### Usage
+## Usage
 
 `.dsk` files are available on the Releases page.
 
-### Building (For developers)
+## Building (For developers)
 
 Prerequisites
 
@@ -29,7 +29,7 @@ The first build will take a little while (depending on your internet
 connection) because it'll download a large container image. Subsequent builds
 will re-use this image and not take nearly as long.
 
-### More Development Notes
+## More Development Notes
 
 During the development of this project, I used a few tools to improve the development experience.
 They're all optional, but they really streamline the workflow.
